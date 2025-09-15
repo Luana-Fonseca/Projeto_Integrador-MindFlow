@@ -28,7 +28,7 @@ function IA() {
 
       <Ia_Container>
         <Division_Ia>
-            <div class="text-about">
+            <div className="text-about">
                 <IaText>IA no seu dia a dia</IaText>
                 <Text>Bem-vindo ao MindFlow, sua solução definitiva para organização pessoal e produtividade! Nossa missão é ajudar você a gerenciar suas tarefas diárias de forma eficiente e intuitiva, permitindo que você se concentre no que realmente importa.</Text>
             </div>

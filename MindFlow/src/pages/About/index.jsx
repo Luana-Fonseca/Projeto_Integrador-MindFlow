@@ -29,7 +29,7 @@ function About() {
       <About_Container>
         <Division_About>
             <AboutImg src="src/assets/image_about.png" alt="Imagem Sobre Nós" />
-            <div class="text-about">
+            <div className="text-about">
                 <AboutText>Sobre Nós</AboutText>
                 <Text>Bem-vindo ao MindFlow, sua solução definitiva para organização pessoal e produtividade! Nossa missão é ajudar você a gerenciar suas tarefas diárias de forma eficiente e intuitiva, permitindo que você se concentre no que realmente importa.</Text>
             </div>

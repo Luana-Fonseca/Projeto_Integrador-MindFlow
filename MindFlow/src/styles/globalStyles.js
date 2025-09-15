@@ -2,8 +2,6 @@
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
-  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 
   :root {
     --nav_color: rgba(49, 51, 184, 1); /* AZUL MÉDIO */
@@ -17,6 +15,10 @@ const GlobalStyle = createGlobalStyle`
     --border: 0.1rem solid rgba(255, 255, 255, 0.3);
     --blue_line: 3px solid rgba(49, 51, 184, 1); /* LINHA AZUL */
     font-size: 10px;
+}
+
+body {
+    font-family: 'Geist', 'Roboto', sans-serif;
 }
 
 * {
