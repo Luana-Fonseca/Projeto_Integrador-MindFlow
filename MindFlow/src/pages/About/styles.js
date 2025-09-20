@@ -111,11 +111,11 @@ export const About_Container = styled.main`
 `;
 
 export const Division_About = styled.div`
-    width: 60%;
+    width: 85%;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 35px;
+    gap: 40px;
 
     @media screen and (min-width: 768px) and (max-width: 1024px) {
       width: 70%;
@@ -123,6 +123,7 @@ export const Division_About = styled.div`
 
     @media screen and (min-width: 475px) and (max-width: 768px) {
       width: 80%;
+      gap: 25px;
     }
 
     @media screen and (min-width: 320px) and (max-width: 475px) {
@@ -137,7 +138,7 @@ export const Division_About = styled.div`
 
 export const AboutImg = styled.img`
     width: 100%;
-    max-width: 500px;
+    max-width: 700px;
     height: auto;
     border-radius: 10px;
 
@@ -154,24 +155,27 @@ export const AboutText = styled.h1`
     font-family: "Geist", sans-serif;
     padding-bottom: 0.5rem;
     font-weight: 700;
-    font-size: 32px;
+    font-size: 37px;
     line-height: 32px;
-    text-align: center;
+    text-align: left;
+    padding-bottom: 2.5rem;
     color: rgba(35, 31, 32, 1);
 
     @media screen and (min-width: 768px) and (max-width: 1024px) {
       font-size: 24px;
+      line-height: 13px;
     }
 
     @media screen and (min-width: 475px) and (max-width: 768px) {
       font-size: 20px;
+      line-height: 13px;
     }
 `;
 
 export const Text = styled.p`
     font-family: "Roboto", sans-serif;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 20px;
     line-height: 32px;
     text-align: justify;
     color: rgba(55, 73, 87, 1);
@@ -182,5 +186,13 @@ export const Text = styled.p`
 
     @media screen and (min-width: 475px) and (max-width: 768px) {
       font-size: 9.1px;
+    }
+
+    @media screen and (min-width: 425px) and (max-width: 475px) {
+      padding-bottom: 5rem;
+    }
+
+    @media screen and (min-width: 320px) and (max-width: 425px) {
+      padding-bottom: 15rem;
     }
 `;

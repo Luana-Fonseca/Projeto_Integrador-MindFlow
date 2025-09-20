@@ -164,12 +164,12 @@ export const LogoHome = styled.img`
   }
 
   @media screen and (min-width: 425px) and (max-width: 768px) {
-    max-width: 60%;
-    height: 85px;
+    max-width: 50%;
+    height: 65px;
   }
 
   @media screen and (min-width: 375px) and (max-width: 425px) {
-    max-width: 60%;
+    max-width: 50%;
     height: 65px;
   }
 
