@@ -151,6 +151,10 @@ export const IaImg = styled.img`
     @media screen and (min-width: 475px) and (max-width: 768px) {
       max-width: 400px;
     }
+
+    @media screen and (min-width: 320px) and (max-width: 425px) {
+      max-width: 400px;
+    }
 `;
 
 export const IaText = styled.h1`
@@ -175,7 +179,7 @@ export const IaText = styled.h1`
 export const Text = styled.p`
     font-family: "Roboto", sans-serif;
     font-weight: 700;
-    font-size: 12px;
+    font-size: 20px;
     line-height: 32px;
     text-align: justify;
     color: rgba(55, 73, 87, 1);
@@ -186,5 +190,17 @@ export const Text = styled.p`
 
     @media screen and (min-width: 475px) and (max-width: 768px) {
       font-size: 9.1px;
+    }
+
+    @media screen and (min-width: 425px) and (max-width: 475px) {
+      font-size: 12px;
+    }
+
+    @media screen and (min-width: 375px) and (max-width: 425px) {
+      font-size: 12px;
+    }
+
+    @media screen and (min-width: 320px) and (max-width: 375px) {
+      font-size: 12px;
     }
 `;

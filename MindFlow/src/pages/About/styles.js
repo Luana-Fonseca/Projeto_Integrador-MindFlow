@@ -151,7 +151,7 @@ export const AboutImg = styled.img`
     }
     @media screen and (min-width: 320px) and (max-width: 375px) {
       max-width: 400px;
-      margin-top: 15rem;
+      margin-top: 35rem;
     }
 `;
 
@@ -193,14 +193,16 @@ export const Text = styled.p`
     }
 
     @media screen and (min-width: 425px) and (max-width: 475px) {
-      padding-bottom: 5rem;
+      font-size: 12px;
     }
 
     @media screen and (min-width: 375px) and (max-width: 425px) {
-      padding-bottom: 15rem;
+      padding-bottom: 3rem;
+      font-size: 12px;
     }
 
     @media screen and (min-width: 320px) and (max-width: 375px) {
       padding-bottom: 35rem;
+      font-size: 12px;
     }
 `;
