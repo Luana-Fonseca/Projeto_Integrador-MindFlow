@@ -1,13 +1,13 @@
-// src/pages/Home/HomeLayout.jsx
+// src/pages/IA/IALayout.jsx
 import styled from 'styled-components';
 
-export const HomeBody = styled.div`
+export const IaBody = styled.div`
   background: rgba(219, 242, 255, 1);
   min-height: 100vh;
   overflow: hidden;
 `;
 
-export const HomeHeader = styled.header`
+export const IaHeader = styled.header`
   position: fixed;
   top: 0;
   left: 0;

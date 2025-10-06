@@ -1,7 +1,7 @@
-// src/pages/Home/index.jsx
+// src/pages/IA/index.jsx
 import {
-  HomeBody,
-  HomeHeader,
+  IaBody,
+  IaHeader,
   HeaderSection,
   Navbar,
   Logo,
@@ -14,8 +14,8 @@ import {
 
 function IA() {
   return (
-    <HomeBody>
-      <HomeHeader>
+    <IaBody>
+      <IaHeader>
         <HeaderSection>
           <Logo src="src/assets/logo_navbar.png" alt="Logo Navbar" />
           <Navbar>
@@ -24,7 +24,7 @@ function IA() {
             <b><a href="about">Sobre Nós</a></b>
           </Navbar>
         </HeaderSection>
-      </HomeHeader>
+      </IaHeader>
 
       <Ia_Container>
         <Division_Ia>
@@ -35,7 +35,7 @@ function IA() {
             <IaImg src="src/assets/image_ia.jpg" alt="Imagem IA" />
         </Division_Ia>
       </Ia_Container>
-    </HomeBody>
+    </IaBody>
   );
 }
 

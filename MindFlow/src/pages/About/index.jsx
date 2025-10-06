@@ -1,7 +1,7 @@
-// src/pages/Home/index.jsx
+// src/pages/About/index.jsx
 import {
-  HomeBody,
-  HomeHeader,
+  AboutBody,
+  AboutHeader,
   HeaderSection,
   Navbar,
   Logo,
@@ -14,8 +14,8 @@ import {
 
 function About() {
   return (
-    <HomeBody>
-      <HomeHeader>
+    <AboutBody>
+      <AboutHeader>
         <HeaderSection>
           <Logo src="src/assets/logo_navbar.png" alt="Logo Navbar" />
           <Navbar>
@@ -24,7 +24,7 @@ function About() {
             <b><a href="about">Sobre Nós</a></b>
           </Navbar>
         </HeaderSection>
-      </HomeHeader>
+      </AboutHeader>
 
       <About_Container>
         <Division_About>
@@ -35,7 +35,7 @@ function About() {
             </div>
         </Division_About>
       </About_Container>
-    </HomeBody>
+    </AboutBody>
   );
 }
 

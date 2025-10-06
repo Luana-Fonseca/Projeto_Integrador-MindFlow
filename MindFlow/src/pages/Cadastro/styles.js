@@ -1,17 +1,18 @@
-// src/pages/Home/HomeLayout.jsx
-import styled from 'styled-components';
+import styled from "styled-components";
 
-export const LoginBody = styled.div`
-  background: linear-gradient(120deg,
+export const CadastroBody = styled.div`
+  background: linear-gradient(
+    120deg,
     rgba(219, 242, 255, 1) 0%,
     rgba(116, 205, 255, 1) 40%,
     rgba(49, 51, 184, 1) 99%
   );
-  min-height: 100vh;
+  height: 100vh;
   overflow: hidden;
 `;
 
-export const LoginHeader = styled.header`
+/* Corrigido nome aqui */
+export const CadastroHeader = styled.header`
   position: fixed;
   top: 0;
   left: 0;
@@ -39,13 +40,6 @@ export const HeaderSection = styled.section`
     padding-top: 1rem;
     padding-bottom: 1rem;
   }
-
-  @media screen and (min-width: 320px) and (max-width: 768px) {
-    margin: 0 3rem;
-    height: 70px;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-  }
 `;
 
 export const Navbar = styled.nav`
@@ -59,14 +53,13 @@ export const Navbar = styled.nav`
     transition: color 0.3s ease, font-size 0.3s ease;
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       bottom: 0;
       left: 0;
       width: 0;
       height: 4px;
-      background: linear-gradient(90deg, #1E1B5B, #193676, #2791BC);
-      border-radius: 0;
+      background: linear-gradient(90deg, #1e1b5b, #193676, #2791bc);
       transition: all 0.5s ease-in-out;
     }
 
@@ -85,12 +78,12 @@ export const Navbar = styled.nav`
       font-size: 1.6rem;
     }
 
-    @media(max-width: 475px) {
+    @media (max-width: 475px) {
       margin: 0 0.3rem;
       font-size: 1.5rem;
     }
 
-     @media(max-width: 320px) {
+    @media (max-width: 320px) {
       margin: 0 0.2rem;
       font-size: 1.1rem;
     }
@@ -106,7 +99,7 @@ export const Logo = styled.img`
   }
 `;
 
-export const Container_Login = styled.section`
+export const Container_Cadastro = styled.section`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -115,7 +108,8 @@ export const Container_Login = styled.section`
   box-sizing: border-box;
 `;
 
-export const LoginWrapper = styled.div`
+
+export const CadastroWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: stretch;
@@ -133,9 +127,9 @@ export const LoginWrapper = styled.div`
   }
 `;
 
-export const LoginBox = styled.div`
+export const CadastroBox = styled.div`
   flex: 1;
-  background: rgba(157, 220, 255, 0.56);
+  background-color: rgba(59, 130, 246, 1);
   backdrop-filter: blur(10px);
   padding: 3rem 4rem;
   display: flex;
@@ -163,7 +157,7 @@ export const ImageBox = styled.div`
     width: 100%;
     max-width: 100%;
     max-height: auto;
-    border-radius: 0 10px 0 0;
+    border-radius: 0 0 0 10px;
   }
 
   @media (max-width: 900px) {
@@ -171,7 +165,7 @@ export const ImageBox = styled.div`
   }
 `;
 
-export const LoginImg = styled.img`
+export const CadastroImg = styled.img`
   /* tamanho original da imagem em telas grandes */
   width: 100%;
   height: 100%;
@@ -195,7 +189,8 @@ export const FormGroup = styled.div`
 export const Input = styled.input`
   width: 94%;
   padding: 0.7rem 1rem;
-  border: 3px solid #1e1b5b;
+  border: 3px solid rgba(116, 205, 255, 1);
+;
   border-radius: 20px;
   background: transparent;
   font-size: 1rem;
@@ -212,45 +207,46 @@ export const Input = styled.input`
   }
 `;
 
-export const LoginButton = styled.div`
-  width: 100%;
-  height: 8em;
+export const CadastroButton = styled.div`
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
 `;
 
 export const Button = styled.button`
-  background: rgba(49, 51, 184, 1);
-  color: #fff;
+  background:rgba(116, 205, 255, 1);
+  color: #000;
   border: none;
   border-radius: 6px;
   padding: 0.7rem 1.8rem;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 1rem;
   width: 8em;
   height: 3em;
 
   &:hover {
+    color: #fff;
     background: #412aeeff;
-    transform: scale(1);
-    font-size: 1.2rem;
+    transform: scale(1.05);
+    font-size: 1.1rem;
   }
 `;
 
 export const RegisterLink = styled.a`
-  display: block;
-  margin-top: 0.8rem;
   color: #1e1b5b;
   text-decoration: none;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
 
   &:hover {
     text-decoration: underline;
+    font-weight: 600;
     color: rgba(49, 51, 184, 1);
-    font-size: 1.2rem;
+  }
+
+  &:hover span {
+    color: rgba(116, 205, 255, 1) !important; /* cor do span ao passar o mouse */
   }
 `;
