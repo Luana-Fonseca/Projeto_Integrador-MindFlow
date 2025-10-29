@@ -1,31 +1,4 @@
-import styled, {keyframes, css } from 'styled-components';
-
-
-export const HomeBody = styled.div`
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden; 
-`;
-
-export const LayoutContainer = styled.div`
-  display: grid;
-  grid-template-columns: 80px 1fr; 
-  grid-template-rows: 70px 1fr;   
-  height: 100%;
-  width: 100%;
-  background-color: ${props => getThemeColors(props.$isDarkMode).background}; 
-    color: ${props => getThemeColors(props.$isDarkMode).text};
-    transition: background-color 0.3s, color 0.3s;
-`;
-
-const moveGradient = keyframes`
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%; 
-  }
-`;
+import styled, { keyframes, css } from 'styled-components';
 
 // Função para retornar as cores baseadas no tema
 const getThemeColors = (isDark) => ({
@@ -33,9 +6,9 @@ const getThemeColors = (isDark) => ({
     primary: isDark ? '#8a78ff' : '#5a52d9',
     
     // Fundo
-    background: isDark ? '#121212' : '#f0f2f5',   // Fundo da Tela
-    sidebarBg: isDark ? '#1e1e1e' : '#ffffff',   // Fundo da Sidebar e Painel
-    contentBg: isDark ? '#2c2c2c' : '#ffffff',   // Fundo das Áreas de Conteúdo
+    background: isDark ? '#121212' : '#f0f2f5',   // Fundo da Tela
+    sidebarBg: isDark ? '#1e1e1e' : '#ffffff',   // Fundo da Sidebar e Painel
+    contentBg: isDark ? '#2c2c2c' : '#ffffff',   // Fundo das Áreas de Conteúdo
     
     // Texto
     text: isDark ? '#ffffff' : '#333333',
@@ -45,121 +18,198 @@ const getThemeColors = (isDark) => ({
     border: isDark ? '#333333' : '#e0e0e0',
 });
 
+export const HomeBody = styled.div`
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden; 
+`;
+
+export const LayoutContainer = styled.div`
+    display: grid;
+    grid-template-columns: 80px 1fr; 
+    grid-template-rows: 70px 1fr;   
+    height: 100%;
+    width: 100%;
+    background-color: ${props => getThemeColors(props.$isDarkMode).background}; 
+    color: ${props => getThemeColors(props.$isDarkMode).text};
+    transition: background-color 0.3s, color 0.3s;
+`;
+
+const moveGradient = keyframes`
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%; 
+    }
+`;
+
 export const AnimatedBorder = styled.div`
-  
-  position: absolute;
-  bottom: 0; 
-  left: 0;
-  width: 100%; 
-  height: 5px; 
     
-  background: linear-gradient(
-    to right,
-    #fefeffff,
-    #000000ff, 
-    #5a52d9,
-    #fefeffff 
-  );
-  
-  background-size: 200% 50%; 
-  animation: ${moveGradient} 4s linear infinite alternate;
+    position: absolute;
+    bottom: 0; 
+    left: 0;
+    width: 100%; 
+    height: 5px; 
+        
+    background: linear-gradient(
+        to right,
+        #fefeffff,
+        #000000ff, 
+        #5a52d9,
+        #fefeffff 
+    );
+    
+    background-size: 200% 50%; 
+    animation: ${moveGradient} 4s linear infinite alternate;
 `;
 
 export const TopBar = styled.header`
-  grid-column: 1 / 3; 
-  grid-row: 1 / 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  background-color: ${props => getThemeColors(props.$isDarkMode).sidebarBg};
-  border-bottom: none;
-  transition: background-color 0.3s, border-color 0.3s;
-  position: relative;
+    grid-column: 1 / 3; 
+    grid-row: 1 / 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background-color: ${props => getThemeColors(props.$isDarkMode).sidebarBg};
+    border-bottom: none;
+    transition: background-color 0.3s, border-color 0.3s;
+    position: relative;
 `;
 
 export const Logo = styled.img`
-  height: 140px;
-  width: auto;
+    height: 140px;
+    width: auto;
 
-  @media (max-width: 768px) {
-    height: 150px;
-  }
+    @media (max-width: 768px) {
+        height: 150px;
+    }
 `;
 
+/**
+ * COMPONENTE ATUALIZADO COM ANIMAÇÃO DE PREENCHIMENTO NO HOVER
+ */
 export const AddButton = styled.button`
-  color: white;
-  background-color: #5a52d9;
-  border: solid 2px #5a52d9;
-  border-radius: 100%;
-  padding: 10px 16px;
-  cursor: pointer;
-  
-  transition: border-color 0.3s ease, transform 0.2s ease; 
-  &:hover {
-    border-style: inset;
-    border-color: #60227cff; 
+    /* --- Base do Botão --- */
+    position: relative; /* ESSENCIAL: Permite posicionar o ::before */
+    overflow: hidden; /* ESSENCIAL: Esconde o ::before que está fora dos limites */
+    cursor: pointer;
+    z-index: 1; /* Garante que o conteúdo e a borda fiquem acima do ::before */
     
-  }
+    /* Estilos Visuais Iniciais */
+    color: #5a52d9; /* Cor do texto inicial */
+    background-color: #f0f2f5;
+    border: solid 2px #5a52d9;
+    border-radius: 100%; /* Botão circular */
+    padding: 10px 16px;
+    
+    /* Transições */
+    transition: 
+        color 0.3s ease, /* Para a cor do texto */
+        border-color 0.3s ease, 
+        transform 0.2s ease; 
+
+    h2 {
+        color: #5a52d9;
+        font-weight: 400;
+        transition: color 0.3s ease; /* Transição para o h2 também */
+    }
+
+    /* --- Pseudo-Elemento para o Efeito de Preenchimento --- */
+    &::before {
+        content: '';
+        position: absolute;
+        bottom: 0; /* Ponto de partida: DE BAIXO */
+        left: 0;
+        width: 100%;
+        height: 0; /* Começa invisível */
+        
+        /* Usa a cor primária para o preenchimento */
+        background-color: ${props => getThemeColors(props.$isDarkMode).primary}; 
+        
+        z-index: -1; /* Coloca a camada de preenchimento atrás do conteúdo */
+        
+        /* Transição da altura para criar o movimento de preenchimento */
+        transition: height 0.3s ease-in-out; 
+    }
+
+    /* --- Estado de HOVER --- */
+    &:hover {
+        /* Altera a cor do texto para branco para contraste */
+        color: white; 
+        /* Borda: Opcional. Mantive a cor primária para um look mais limpo */
+        border-color: ${props => getThemeColors(props.$isDarkMode).primary}; 
+        transform: scale(1.05); /* Pequeno efeito de "push" */
+        /* Removido o 'border-style: inset;' e 'border-color: #60227cff;' que eram do estilo antigo. */
+    }
+    
+    &:hover h2 {
+        color: white; /* Altera a cor do h2 para branco */
+    }
+    
+    &:hover::before {
+        height: 100%; /* Expande o preenchimento para cobrir 100% */
+    }
 `;
+// FIM DO COMPONENTE ATUALIZADO
 
 export const Avatar = styled.img`
-  height: 40px;
-  width: 40px;
-  border-radius: 50%;
-  cursor: pointer;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    cursor: pointer;
 `;
 
 export const Sidebar = styled.nav`
-  grid-column: 1 / 2;
-  grid-row: 2 / 3;
-  background-color: ${props => getThemeColors(props.$isDarkMode).sidebarBg};
-  border-right: 1px solid ${props => getThemeColors(props.$isDarkMode).border};
-  transition: background-color 0.3s, border-color 0.3s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 20px;
-  gap: 25px;
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+    background-color: ${props => getThemeColors(props.$isDarkMode).sidebarBg};
+    border-right: 1px solid ${props => getThemeColors(props.$isDarkMode).border};
+    transition: background-color 0.3s, border-color 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    gap: 25px;
 `;
 
 export const SidebarLink = styled.a`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 50px;
-  height: 50px;
-  border-radius: 10px;
-  cursor: pointer;
-  padding: 5px; 
-  
-  img {
-    width: 25px; 
-    height: 25px;
-  }
-  
-  background-color: transparent;
-  
-  ${props => props.$isActive && css`
-    background-color: #e6eefe; 
-    border: 1px solid #b3c5ff; 
-  `}
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 5px; 
+    
+    img {
+        width: 25px; 
+        height: 25px;
+    }
+    
+    background-color: transparent;
+    
+    ${props => props.$isActive && css`
+        background-color: #e6eefe; 
+        border: 1px solid #b3c5ff; 
+    `}
 
-  &:hover {
+    &:hover {
         background-color: ${props => props.$isDarkMode ? '#3a3a3a' : '#f0f0ff'};
         color: ${props => getThemeColors(props.$isDarkMode).primary};
     }
 `;
 
 export const ContentArea = styled.main`
-  grid-column: 2 / 3;
-  grid-row: 2 / 3;
-  padding: 24px;
-  overflow-y: auto; 
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    padding: 24px;
+    overflow-y: auto; 
 `;
 
 export const DashboardContainer = styled.div`
-  /* Estilos específicos para o container azul das tarefas, se for a seção ativa */
+    /* Estilos específicos para o container azul das tarefas, se for a seção ativa */
 `;
 
 export const SectionTask = styled.section`
@@ -168,10 +218,10 @@ export const SectionTask = styled.section`
     gap: 16px;
 
     & h2 {
-    font-family: "Geist", sans-serif;
-    font-size: 2.5em;
-    font-weight: 100;
-    color: #28209bff;
+        font-family: "Geist", sans-serif;
+        font-size: 2.5em;
+        font-weight: 100;
+        color: #28209bff;
     }
 `;
 
@@ -189,9 +239,10 @@ export const TaskListContainer = styled.div`
     flex-direction: row; 
     align-items: flex-start; 
     gap: 15px; 
-    
+    padding-top: 2px;
+
     overflow-x: auto; 
-      overflow-y: hidden;
+    overflow-y: hidden;
     flex-wrap: nowrap;
     
     /* Adiciona padding lateral para que as colunas não se sobreponham ao botão flutuante */
@@ -241,7 +292,7 @@ export const SprintItem = styled.div`
         background-color: #4841b5;
         transform: translateY(-1px);
     }
-`;  
+`;  
 
 // --- NOVOS ESTILOS PARA O PAINEL DE CONTROLE (Panel) ---
 
@@ -472,7 +523,8 @@ export const ProfileInfo = styled.div`
     padding: 20px;
     border-bottom: 1px solid #eee;
     
-    ${Avatar} { /* Reutiliza o estilo do Avatar, mas ajusta o tamanho se necessário */
+    /* Reutiliza o estilo do Avatar, mas ajusta o tamanho se necessário */
+    ${Avatar} { 
         height: 80px;
         width: 80px;
         margin-bottom: 10px;
@@ -481,7 +533,7 @@ export const ProfileInfo = styled.div`
     p {
         font-size: 0.9em;
         color: #666;
-    }
+    }   
 `;
 
 export const SettingsList = styled.div`
