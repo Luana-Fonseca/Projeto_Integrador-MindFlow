@@ -29,6 +29,7 @@ function Home({ navigateTo }) {
           <Navbar>
             <b><a href="#home" onClick={(e) => handleNavClick('home', e)}>Home</a></b>
             <b><a href="#ia" onClick={(e) => handleNavClick('ia', e)}>IA</a></b>
+            <b><a href="#login" onClick={(e) => handleNavClick('login', e)}>Login</a></b>
             <b><a href="#about" onClick={(e) => handleNavClick('about', e)}>Sobre Nós</a></b>
           </Navbar>
         </HeaderSection>
