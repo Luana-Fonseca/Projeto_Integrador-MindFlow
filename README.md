@@ -1,5 +1,5 @@
-Persistência de Dados: Armazenamento seguro de todas as informações de tarefas.
-
+Organização de Tarefas com Foco Universitário e Inteligência Artificial
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Este projeto visa simplificar e otimizar a gestão de tarefas para estudantes universitários, integrando o poder da Inteligência Artificial para oferecer sugestões e auxílio na organização de estudos complexos.
 
 ✨ Funcionalidades Principais
@@ -12,8 +12,9 @@ Gerar sugestões de quebra de tarefas grandes em subtarefas gerenciáveis.
 Auxiliar na priorização e agendamento de estudos.
 
 Persistência de Dados: Armazenamento seguro de todas as informações de tarefas.
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 🛠️ Tecnologias Utilizadas
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Este projeto é uma aplicação Full-Stack desenvolvida com as seguintes tecnologias:
 
 Frontend
