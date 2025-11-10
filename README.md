@@ -27,6 +27,3 @@ Google Gemini API: Utilizada para integrar as capacidades de Inteligência Artif
 
 Banco de Dados
 MySQL: Sistema de gerenciamento de banco de dados relacional para armazenamento estruturado de dados de usuários e tarefas.
-
-📄 Licença
-Este projeto está licenciado sob a Licença [Insira o tipo de Licença, ex: MIT] - veja o arquivo LICENSE.md para mais detalhes.
