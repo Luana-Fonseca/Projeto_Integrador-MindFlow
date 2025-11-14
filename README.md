@@ -1,29 +1,29 @@
 Organização de Tarefas com Foco Universitário e Inteligência Artificial
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-<p style="align-itens: justify;" >Este projeto visa simplificar e otimizar a gestão de tarefas para estudantes universitários, integrando o poder da Inteligência Artificial para oferecer sugestões e auxílio na organização de estudos complexos. </p>
+<p style="align-itens: justify;"> Este projeto visa simplificar e otimizar a gestão de tarefas para estudantes universitários, integrando o poder da Inteligência Artificial para oferecer sugestões e auxílio na organização de estudos complexos. </p>
 
-✨ Funcionalidades Principais
-1. Organização de Tarefas: Crie, edite, categorize e acompanhe suas tarefas e projetos acadêmicos (trabalhos, leituras, provas).
+## ✨Funcionalidades Principais
+<p style="align-itens: justify;"> 1. Organização de Tarefas: Crie, edite, categorize e acompanhe suas tarefas e projetos acadêmicos (trabalhos, leituras, provas). </p>
 
-2. Assistente de IA Integrado: Utilização da API Google Gemini para:
+<p style="align-itens: justify;"> 2. Assistente de IA Integrado: Utilização da API Google Gemini para: </p>
 
-- Gerar sugestões de quebra de tarefas grandes em subtarefas gerenciáveis.
+<p style="align-itens: justify;"> - Gerar sugestões de quebra de tarefas grandes em subtarefas gerenciáveis. </p>
 
-- Auxiliar na priorização e agendamento de estudos.
+<p style="align-itens: justify;"> - Auxiliar na priorização e agendamento de estudos. </p>
 
-- Persistência de Dados: Armazenamento seguro de todas as informações de tarefas.
+<p style="align-itens: justify;"> - Persistência de Dados: Armazenamento seguro de todas as informações de tarefas. </p>
 
 🛠️ Tecnologias Utilizadas
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Este projeto é uma aplicação Full-Stack desenvolvida com as seguintes tecnologias:
+<p style="align-itens: justify;"> Este projeto é uma aplicação Full-Stack desenvolvida com as seguintes tecnologias: </p>
 
 Frontend
-React.js: Biblioteca JavaScript para construção da interface de usuário dinâmica e reativa.
+<p style="align-itens: justify;"> React.js (especificamente React + Vite): Biblioteca JavaScript para construção da interface de usuário dinâmica e reativa. </p>
 
 Backend
-Node.js: Ambiente de execução JavaScript para o servidor, responsável pela lógica de negócios e comunicação com o banco de dados e a API de IA.
+<p style="align-itens: justify;"> Node.js: Ambiente de execução JavaScript para o servidor, responsável pela lógica de negócios e comunicação com o banco de dados e a API de IA. </p>
 
-Google Gemini API: Utilizada para integrar as capacidades de Inteligência Artificial ao fluxo de trabalho do estudante.
+<p style="align-itens: justify;"> Google Gemini API: Utilizada para integrar as capacidades de Inteligência Artificial ao fluxo de trabalho do estudante. </p>
 
 Banco de Dados
-MySQL: Sistema de gerenciamento de banco de dados relacional para armazenamento estruturado de dados de usuários e tarefas.
+<p style="align-itens: justify;"> MySQL: Sistema de Gerenciamento de Banco de Dados (SGBD) Relacional para armazenamento estruturado de dados de usuários e tarefas. </p>
