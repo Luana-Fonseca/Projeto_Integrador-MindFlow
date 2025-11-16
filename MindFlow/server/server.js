@@ -1,26 +1,67 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const bcrypt = require('bcryptjs'); 
+const multer = require('multer'); 
+const path = require('path');
+const http = require('http'); 
+const { Server } = require('socket.io'); 
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const httpServer = http.createServer(app);
+const PORT = 3001; 
 
-// Conexão MySQL
+// --- Configuração do Socket.io ---
+const io = new Server(httpServer, {
+    cors: {
+        origin: `http://localhost:5173`,
+        methods: ["GET", "POST", "PUT", "DELETE"]
+    }
+});
+
+// --- Configuração do Multer para upload de arquivos ---
+const uploadsDir = path.join(__dirname, 'uploads/');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadsDir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
+
+// --- Middlewares ---
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+}));
+app.use(express.json());
+app.use('/uploads', express.static(uploadsDir));
+// Garante que o Node.js encontra o __dirname
+app.use((req, res, next) => {
+    // Para fins de logs e debug, garante que o __dirname existe em CJS
+    next();
+});
+
+// --- Conexão MySQL ---
 const db = mysql.createConnection({
   host: 'localhost',
-  user: 'root',     // Seu usuário MySQL
-  password: '',     // Sua senha MySQL
+  user: 'root',     
+  password: '',     
   database: 'mindflowdb'
 });
 
 db.connect((err) => {
   if (err) {
-    console.error('❌ Erro conectando ao MySQL:', err);
+    console.error('❌ Erro conectando ao MySQL:', err.code, err.message);
     return;
   }
   console.log('✅ Conectado ao MySQL!');
 });
+
 
 // ------------------------------
 // Funções de conversão
@@ -33,28 +74,101 @@ const converterTarefa = (tarefaDB) => ({
   dueDate: tarefaDB.data_vencimento,
   priority: tarefaDB.prioridade,
   sprintId: tarefaDB.sprint_id ? `sprint-${tarefaDB.sprint_id}` : null,
-  status: tarefaDB.status
+  status: tarefaDB.status,
+  usuarioId: tarefaDB.usuario_id
 });
 
-const converterParaMySQL = (tarefaReact) => ({
+const converterParaMySQL = (tarefaReact, usuario_id = 1) => ({
   titulo: tarefaReact.name,
   descricao: tarefaReact.description,
   prioridade: tarefaReact.priority,
   data_vencimento: tarefaReact.dueDate,
   status: tarefaReact.status,
   sprint_id: tarefaReact.sprintId ? parseInt(tarefaReact.sprintId.replace('sprint-', '')) : null,
-  usuario_id: 1
+  usuario_id: usuario_id
 });
 
 // ------------------------------
-// ROTAS
+// ROTAS DE AUTENTICAÇÃO
 // ------------------------------
 
-// GET – Buscar tarefas
-app.get('/api/tarefas', (req, res) => {
-  const query = 'SELECT * FROM tarefas ORDER BY criado_em DESC';
+// POST /register – CADASTRO
+app.post('/register', (req, res) => {
+    const { nome, email, senha } = req.body;
+    
+    db.query('SELECT * FROM usuario WHERE email = ?', [email], (err, results) => {
+        if (err) {
+            console.error('❌ Erro na consulta de registro:', err);
+            return res.status(500).json({ error: 'Erro interno do servidor.' });
+        }
+        if (results.length > 0) {
+            return res.status(409).json({ error: 'Este e-mail já está cadastrado.' });
+        }
 
-  db.query(query, (err, results) => {
+        bcrypt.hash(senha, 10, (err, hashedPassword) => {
+            if (err) {
+                console.error('❌ Erro ao criptografar senha:', err);
+                return res.status(500).json({ error: 'Erro ao processar senha.' });
+            }
+
+            const query = 'INSERT INTO usuario (nome, email, senha) VALUES (?, ?, ?)';
+            db.query(query, [nome, email, hashedPassword], (err, results) => {
+                if (err) {
+                    console.error('❌ Erro criando usuário:', err);
+                    return res.status(500).json({ error: 'Erro ao registrar no banco de dados.' });
+                }
+                
+                console.log('✅ Novo usuário registrado:', nome);
+                res.status(201).json({ message: 'Usuário registrado com sucesso!', userId: results.insertId });
+            });
+        });
+    });
+});
+
+// POST /login – LOGIN
+app.post('/login', (req, res) => {
+    const { email, senha } = req.body;
+
+    db.query('SELECT id, nome, senha, avatar FROM usuario WHERE email = ?', [email], (err, results) => {
+        if (err) {
+            console.error('❌ Erro na consulta de login:', err);
+            return res.status(500).json({ error: 'Erro interno do servidor.' });
+        }
+        if (results.length === 0) {
+            return res.status(401).json({ error: 'E-mail ou senha incorretos.' });
+        }
+
+        const userDB = results[0];
+        
+        bcrypt.compare(senha, userDB.senha, (err, isMatch) => {
+            if (err) {
+                console.error('❌ Erro na comparação de senha:', err);
+                return res.status(500).json({ error: 'Erro na autenticação.' });
+            }
+
+            if (isMatch) {
+                const { senha, ...user } = userDB; 
+                console.log('✅ Login bem-sucedido:', user.nome);
+                res.status(200).json({ 
+                    message: 'Login realizado com sucesso!', 
+                    user: user 
+                });
+            } else {
+                res.status(401).json({ error: 'E-mail ou senha incorretos.' });
+            }
+        });
+    });
+});
+
+// ------------------------------
+// ROTAS DE TAREFAS (CRUD)
+// ------------------------------
+
+app.get('/api/tarefas/:usuario_id', (req, res) => {
+  const usuarioId = req.params.usuario_id;
+  const query = 'SELECT * FROM tarefas WHERE usuario_id = ? ORDER BY criado_em DESC'; 
+
+  db.query(query, [usuarioId], (err, results) => {
     if (err) {
       console.error('❌ Erro buscando tarefas:', err);
       return res.status(500).json({ error: 'Erro interno do servidor' });
@@ -66,10 +180,10 @@ app.get('/api/tarefas', (req, res) => {
   });
 });
 
-// POST – Criar tarefa
 app.post('/api/tarefas', (req, res) => {
   const tarefaReact = req.body;
-  const tarefaMySQL = converterParaMySQL(tarefaReact);
+  const usuario_id = tarefaReact.usuarioId || 1; 
+  const tarefaMySQL = converterParaMySQL(tarefaReact, usuario_id);
 
   const query = `
     INSERT INTO tarefas (titulo, descricao, prioridade, data_vencimento, status, sprint_id, usuario_id) 
@@ -95,22 +209,23 @@ app.post('/api/tarefas', (req, res) => {
       db.query('SELECT * FROM tarefas WHERE id = ?', [results.insertId], (err, taskResults) => {
         const tarefaCriada = converterTarefa(taskResults[0]);
         console.log('✅ Tarefa criada:', tarefaCriada.name);
+        io.to(`user-${usuario_id}`).emit('task:added', tarefaCriada);
         res.json({ tarefa: tarefaCriada });
       });
     }
   );
 });
 
-// PUT – Atualizar tarefa
 app.put('/api/tarefas/:id', (req, res) => {
   const taskId = req.params.id.replace('task-', '');
   const tarefaReact = req.body;
-  const tarefaMySQL = converterParaMySQL(tarefaReact);
+  const usuario_id = tarefaReact.usuarioId || 1;
+  const tarefaMySQL = converterParaMySQL(tarefaReact, usuario_id);
 
   const query = `
     UPDATE tarefas 
     SET titulo=?, descricao=?, prioridade=?, data_vencimento=?, status=?, sprint_id=?
-    WHERE id=?
+    WHERE id=? AND usuario_id=?
   `;
 
   db.query(query,
@@ -121,7 +236,8 @@ app.put('/api/tarefas/:id', (req, res) => {
       tarefaMySQL.data_vencimento,
       tarefaMySQL.status,
       tarefaMySQL.sprint_id,
-      taskId
+      taskId,
+      usuario_id
     ],
     (err) => {
       if (err) {
@@ -129,30 +245,117 @@ app.put('/api/tarefas/:id', (req, res) => {
         return res.status(500).json({ error: 'Erro interno do servidor' });
       }
       console.log('♻️ Tarefa atualizada:', tarefaReact.name);
+      io.to(`user-${usuario_id}`).emit('task:updated', { id: `task-${taskId}`, ...tarefaReact });
       res.json({ message: 'Tarefa atualizada!' });
     }
   );
 });
 
-// DELETE – Excluir tarefa
 app.delete('/api/tarefas/:id', (req, res) => {
   const taskId = req.params.id.replace('task-', '');
+  const usuario_id = req.body.usuarioId || 1; 
 
-  db.query('DELETE FROM tarefas WHERE id = ?', [taskId], (err) => {
+  db.query('DELETE FROM tarefas WHERE id = ? AND usuario_id = ?', [taskId, usuario_id], (err, results) => {
     if (err) {
       console.error('❌ Erro excluindo tarefa:', err);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
+    if (results.affectedRows === 0) {
+        return res.status(404).json({ error: 'Tarefa não encontrada ou não pertence ao usuário.' });
+    }
     console.log('🗑️ Tarefa excluída ID:', taskId);
+    io.to(`user-${usuario_id}`).emit('task:deleted', { id: `task-${taskId}` });
     res.json({ message: 'Tarefa excluída!' });
   });
 });
 
 // ------------------------------
-// SERVIDOR
+// ROTAS DE CHAT 
 // ------------------------------
 
-const PORT = 3001;
-app.listen(PORT, () => {
+// GET /api/messages/:userId - Buscar histórico de chat
+app.get('/api/messages/:userId', (req, res) => {
+    const userId = req.params.userId;
+    const sql = 'SELECT id, sender_type, content, file_path, sender_name, created_at FROM messages WHERE user_id = ? ORDER BY created_at ASC';
+
+    db.query(sql, [userId], (err, results) => {
+        if (err) {
+            console.error('❌ Erro ao buscar mensagens:', err);
+            return res.status(500).json({ message: 'Erro ao buscar mensagens.' });
+        }
+        
+        const messagesWithFullUrl = results.map(msg => ({
+            ...msg,
+            file_path: msg.file_path ? `http://localhost:${PORT}${msg.file_path}` : null,
+        }));
+        
+        res.status(200).json(messagesWithFullUrl);
+    });
+});
+
+// POST /api/messages - Enviar mensagem (incluindo IA ou upload)
+app.post('/api/messages', upload.single('file'), (req, res) => {
+    const { user_id, sender_type, content, sender_name } = req.body;
+    const file_path = req.file ? `/uploads/${req.file.filename}` : null;
+    const userId = parseInt(user_id);
+
+    if (!userId || !sender_type || !content) {
+        return res.status(400).json({ message: 'Campos obrigatórios ausentes.' });
+    }
+
+    const sql = 'INSERT INTO messages (user_id, sender_type, content, file_path, sender_name) VALUES (?, ?, ?, ?, ?)';
+    db.query(sql, [userId, sender_type, content, file_path, sender_name], (err, result) => {
+        if (err) {
+            console.error('❌ Erro ao inserir mensagem:', err);
+            return res.status(500).json({ message: 'Erro ao enviar mensagem.' });
+        }
+
+        const newMessage = {
+            id: result.insertId,
+            user_id: userId,
+            sender_type,
+            content,
+            file_path: file_path ? `http://localhost:${PORT}${file_path}` : null,
+            sender_name,
+            created_at: new Date().toISOString(),
+        };
+
+        io.to(`chat-${userId}`).emit('message:new', newMessage);
+
+        res.status(201).json({ message: 'Mensagem enviada com sucesso!', message: newMessage });
+    });
+});
+
+
+// ------------------------------
+// SOCKET.IO (COMUNICAÇÃO EM TEMPO REAL)
+// ------------------------------
+
+io.on('connection', (socket) => {
+    console.log(`📡 Novo cliente conectado: ${socket.id}`);
+
+    socket.on('user:join', (userId) => {
+        const room = `user-${userId}`;
+        socket.join(room);
+        console.log(`👤 Cliente ${socket.id} entrou na sala ${room} (Tarefas/Geral)`);
+    });
+
+    socket.on('chat:join', (userId) => {
+        const chatRoom = `chat-${userId}`;
+        socket.join(chatRoom);
+        console.log(`💬 Cliente ${socket.id} entrou na sala de chat ${chatRoom}`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log(`🔌 Cliente desconectado: ${socket.id}`);
+    });
+});
+
+
+// ------------------------------
+// INICIALIZAÇÃO DO SERVIDOR (DEVE SER O ÚLTIMO PASSO)
+// ------------------------------
+
+httpServer.listen(PORT, () => { 
   console.log(`🚀 Servidor rodando: http://localhost:${PORT}`);
 });

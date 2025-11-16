@@ -1,10 +1,10 @@
-// src/utils/socket.js
+// MindFlow/src/utils/socket.js
 import { io } from "socket.io-client";
 
 const SERVER_URL = import.meta.env.VITE_CHAT_SERVER_URL || "http://localhost:3001";
 
 const socket = io(SERVER_URL, {
-  transports: ["websocket"],
+  transports: ["websocket", "polling"], // Correção aplicada aqui
   autoConnect: true,
 });
 

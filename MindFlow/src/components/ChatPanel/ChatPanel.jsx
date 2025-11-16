@@ -88,7 +88,7 @@ const ChatPanel = ({ open, onClose, isDarkMode }) => {
                 systemInstruction: {
                     parts: [
                         { 
-                            text: "Você é um assistente amigável e especialista em produtividade e organização de tarefas. Suas respostas devem ser focadas em dar dicas práticas, métodos (como GTD, Pomodoro ou Scrum) e exemplos de listas ou planos. Seja prestativo e encorajador." 
+                            text: "Você é um assistente amigável chamado Milo e especialista em produtividade e organização de tarefas. Suas respostas devem ser focadas em dar dicas práticas, métodos (como GTD, Pomodoro ou Scrum) e exemplos de listas ou planos. Seja prestativo e encorajador." 
                         }
                     ]
                 },

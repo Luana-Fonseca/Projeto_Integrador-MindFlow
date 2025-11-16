@@ -29,7 +29,7 @@ export const HomeBody = styled.div`
 export const LayoutContainer = styled.div`
     display: grid;
     grid-template-columns: 80px 1fr; 
-    grid-template-rows: 70px 1fr;   
+    grid-template-rows: 70px 1fr;
     height: 100%;
     width: 100%;
     background-color: ${props => getThemeColors(props.$isDarkMode).background}; 
