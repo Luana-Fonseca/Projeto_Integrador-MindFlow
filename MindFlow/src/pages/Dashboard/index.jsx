@@ -50,7 +50,6 @@ import {
     LogoutLink,
     StyledCalendarContainer,
     ChartGridWrapper,
-    ArrowButton as ChartGridArrowButton
 } from './styles.js';
 
 // 🌟 CORREÇÃO 1: Caminho de importação corrigido para o seu serviço de API
@@ -239,19 +238,32 @@ function Dashboard({ navigateTo }) {
     }, [sprints]);
     
     // FUNÇÕES DE CARREGAMENTO
+    const API_BASE_URL = 'http://localhost:3001'; 
+
     const loadUserAvatar = () => {
         const userData = localStorage.getItem('userData');
-        const savedAvatar = localStorage.getItem('userAvatar');
+        let avatarPath = localStorage.getItem('userAvatar');
         
         if (userData) {
             const user = JSON.parse(userData);
             setUserName(user.nome);
+
+            // Se o avatar não foi salvo separadamente, use o caminho do objeto usuário
+            if (!avatarPath && user.avatar) {
+                avatarPath = user.avatar;
+            }
         }
         
-        if (savedAvatar && savedAvatar.startsWith('http')) {
-            setAvatarUrl(savedAvatar);
-            console.log('✅ Avatar carregado:', savedAvatar);
+        // 🔑 CORREÇÃO CRÍTICA: Se o caminho for relativo (começa com /uploads), constrói a URL completa
+        if (avatarPath && avatarPath.startsWith('/uploads')) {
+            const fullUrl = `${API_BASE_URL}${avatarPath}`;
+            setAvatarUrl(fullUrl);
+            console.log('✅ Avatar carregado (Absoluto):', fullUrl);
+        } else if (avatarPath) {
+            // Se já for uma URL completa (ex: de um upload anterior que funcionou), usa-a
+            setAvatarUrl(avatarPath);
         } else {
+            // Se não houver nada, usa o genérico
             setAvatarUrl(genericAvatar);
             console.log('✅ Usando avatar genérico');
         }
@@ -259,8 +271,11 @@ function Dashboard({ navigateTo }) {
 
     const carregarTarefasDoBanco = async () => {
         try {
-            console.log('🔄 Carregando tarefas do banco...');
+            console.log('🔄 Tentando carregar tarefas do banco...');
             
+            // 💡 NOTA: Se o seu GET /api/tarefas/:usuario_id ainda não estiver usando
+            // o ID, ele falhará na busca e retornará vazio, causando o problema.
+            // Para testar, garanta que há dados vinculados ao ID 1 no BD (se não houver autenticação completa)
             const tarefasAPI = await tarefasService.getTarefas();
             
             // Converter para seu formato interno do Kanban
@@ -759,7 +774,7 @@ function Dashboard({ navigateTo }) {
                     date={currentDate}
                     view={currentView}
                     onNavigate={(newDate) => setCurrentDate(newDate)}
-                    onView={(newView) => setCurrentView(newView)}
+                    onView={(newView) => setCurrentDate(newView)}
                     messages={{
                         next: "Próximo", previous: "Anterior", today: "Hoje",
                         month: "Mês", week: "Semana", day: "Dia",
@@ -884,7 +899,7 @@ function Dashboard({ navigateTo }) {
         const userData = JSON.parse(localStorage.getItem('userData'));
         
         const [selectedFile, setSelectedFile] = useState(null);
-        const [previewUrl, setPreviewUrl] = useState(avatarUrl || genericAvatar);
+        const [previewUrl, setPreviewUrl] = useState(genericAvatar); // Usa genericAvatar como fallback
         const [uploading, setUploading] = useState(false);
 
         const handleFileSelect = (event) => {
@@ -928,7 +943,7 @@ function Dashboard({ navigateTo }) {
 
                 if (response.ok) {
                     const newAvatarUrl = data.avatarUrl;
-                    setAvatarUrl(newAvatarUrl);
+                    setAvatarUrl(newAvatarUrl); // Atualiza o estado do Dashboard
                     localStorage.setItem('userAvatar', newAvatarUrl);
                     
                     const updatedUserData = { ...userData, avatar: newAvatarUrl };

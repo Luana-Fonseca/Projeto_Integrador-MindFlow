@@ -160,6 +160,42 @@ app.post('/login', (req, res) => {
     });
 });
 
+// POST /upload-avatar – ATUALIZAÇÃO DO AVATAR (NOVA ROTA)
+app.post('/upload-avatar', upload.single('avatar'), (req, res) => {
+    // req.file contém o arquivo após o processamento do Multer
+    if (!req.file) {
+        return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
+    }
+
+    const { userId } = req.body;
+    // O caminho que será salvo no banco de dados
+    const filePath = `/uploads/${req.file.filename}`;
+    
+    // 1. Atualizar o caminho do avatar no banco de dados
+    const query = 'UPDATE usuario SET avatar = ? WHERE id = ?';
+
+    db.query(query, [filePath, userId], (err, results) => {
+        if (err) {
+            console.error('❌ Erro atualizando avatar no banco:', err);
+            // Em caso de erro no DB, retorne 500
+            return res.status(500).json({ error: 'Erro interno ao salvar o avatar.' });
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+        
+        // 2. Retornar a URL completa para que o frontend possa exibir a imagem
+        const fullUrl = `http://localhost:${PORT}${filePath}`;
+
+        console.log(`✅ Avatar do usuário ${userId} atualizado: ${filePath}`);
+        res.status(200).json({ 
+            message: 'Avatar atualizado com sucesso!',
+            avatarUrl: fullUrl 
+        });
+    });
+});
+
 // ------------------------------
 // ROTAS DE TAREFAS (CRUD)
 // ------------------------------

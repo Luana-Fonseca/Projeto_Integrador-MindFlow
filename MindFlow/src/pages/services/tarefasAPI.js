@@ -4,21 +4,31 @@ const API_URL = 'http://localhost:3001/api';
 export const tarefasService = {
   // 🔹 Buscar tarefas (tenta API, depois localStorage)
   getTarefas: async () => {
+    // 🔑 NOVO: Lê o ID do usuário logado diretamente aqui
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    const usuarioId = userData ? userData.id : '1'; // Usa '1' como fallback para depuração, se necessário.
+
     try {
-      console.log('🔄 Tentando buscar tarefas da API...');
-      const response = await fetch(`${API_URL}/tarefas`);
+      console.log(`🔄 Tentando buscar tarefas da API para o usuário: ${usuarioId}...`);
       
-      if (!response.ok) throw new Error('API offline');
+      // 🔑 CORREÇÃO: Adiciona o ID do usuário à URL
+      const response = await fetch(`${API_URL}/tarefas/${usuarioId}`); 
+      
+      if (!response.ok) {
+        // Se a API não retornar 200 (OK), lança erro para ir para o fallback
+        throw new Error('API offline ou ID de usuário inválido.');
+      }
       
       const tarefas = await response.json();
       console.log('✅ Tarefas carregadas da API:', tarefas.length);
       
-      // Salva no localStorage como backup
-      localStorage.setItem('tarefas-backup', JSON.stringify(tarefas));
+      // 💡 CORREÇÃO DE LOG: Salva o backup no local correto
+      localStorage.setItem('tarefas', JSON.stringify(tarefas)); 
       return tarefas;
     } catch (error) {
-      console.log('❌ API offline, usando localStorage');
-      const tarefasLocal = JSON.parse(localStorage.getItem('tarefas') || '[]');
+      console.log('❌ Falha na API. Usando dados locais (não persistentes).', error);
+      // 💡 CORREÇÃO DE LOG: Carrega do local correto
+      const tarefasLocal = JSON.parse(localStorage.getItem('tarefas') || '[]'); 
       return tarefasLocal;
     }
   },
