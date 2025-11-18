@@ -287,9 +287,36 @@ function Dashboard({ navigateTo }) {
         }
     };
 
+    const carregarSprintsDoBanco = async () => {
+        try {
+            console.log('🔄 Carregando sprints do banco...');
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            const usuarioId = userData ? userData.id : null;
+
+            if (!usuarioId) return;
+
+            const response = await fetch(`${API_BASE_URL}/sprints/${usuarioId}`);
+            if (response.ok) {
+                const sprintsAPI = await response.json();
+                
+                // Converte array para objeto (formato que seu estado usa)
+                const sprintsObject = {};
+                sprintsAPI.forEach(sprint => {
+                    sprintsObject[sprint.id] = sprint;
+                });
+
+                setSprints(sprintsObject);
+                console.log('✅ Sprints carregadas:', sprintsAPI.length);
+            }
+        } catch (error) {
+            console.error('❌ Erro carregando sprints:', error);
+        }
+    };
+
     useEffect(() => {
         loadUserAvatar();
         carregarTarefasDoBanco();
+        carregarSprintsDoBanco(); 
     }, []);
 
     // FUNÇÕES DE CONTROLE
@@ -334,35 +361,56 @@ function Dashboard({ navigateTo }) {
         setSprintToEdit(null);
     };
 
-    const handleSaveSprint = (sprintData) => {
-        // Lógica de validação de data (mantida a correção robusta)
-        const sprintStart = new Date(sprintData.startDate + 'T12:00:00');
-        const newEndDate = new Date(sprintData.endDate + 'T12:00:00');
+    const handleSaveSprint = async (sprintData) => {
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        const usuarioId = userData ? userData.id : null;
 
-        const sprintStartNormalized = sprintStart.setHours(0, 0, 0, 0);
-        const endTimestampNormalized = newEndDate.setHours(0, 0, 0, 0);
-        const todayTimestampNormalized = new Date().setHours(0, 0, 0, 0);
-
-        if (!sprintData.id && sprintStartNormalized < todayTimestampNormalized) {
-            alert("A data de início não pode ser anterior a hoje para uma nova Sprint.");
+        if (!usuarioId) {
+            alert('Erro: Usuário não logado.');
             return;
         }
 
-        if (endTimestampNormalized < sprintStartNormalized) {
-            alert("A data de término não pode ser anterior à data de início.");
+        // Validação básica de datas
+        const start = new Date(sprintData.startDate);
+        const end = new Date(sprintData.endDate);
+        if (end < start) {
+            alert("A data de término não pode ser anterior à de início.");
             return;
         }
-        
-        // Persistência
-        setSprints(prevSprints => {
-            if (sprintData.id) {
-                return { ...prevSprints, [sprintData.id]: sprintData };
+
+        const dataToSave = {
+            ...sprintData,
+            usuarioId: usuarioId,
+            color: sprintData.color || '#5a52d9'
+        };
+
+        try {
+            // Envia para o Backend
+            const response = await fetch(`${API_BASE_URL}/sprints`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSave)
+            });
+
+            if (response.ok) {
+                const savedSprint = await response.json();
+                
+                // Atualiza a tela com o ID real do banco
+                setSprints(prev => ({
+                    ...prev,
+                    [savedSprint.id]: { ...dataToSave, id: savedSprint.id } // Usa o ID do banco!
+                }));
+                
+                handleCloseSprintModal();
+                console.log('✅ Sprint salva com sucesso!');
+            } else {
+                alert('Erro ao salvar sprint no servidor.');
             }
-            const newSprintId = `sprint-${Date.now()}`;
-            return { ...prevSprints, [newSprintId]: { ...sprintData, id: newSprintId } };
-        });
-        handleCloseSprintModal();
-    };
+        } catch (error) {
+            console.error('❌ Erro de conexão:', error);
+            alert('Erro de conexão ao salvar sprint.');
+        }
+    };  
 
     const handleQuickAssignToSprint = (taskId, newSprintId) => {
         setKanbanData(prevData => ({

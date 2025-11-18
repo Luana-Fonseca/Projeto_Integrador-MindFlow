@@ -387,6 +387,72 @@ io.on('connection', (socket) => {
     });
 });
 
+//Sprint
+app.post('/sprints', (req, res) => {
+    const { name, startDate, endDate, goal, color, usuarioId } = req.body;
+
+    // Validação simples
+    if (!usuarioId) {
+        return res.status(400).json({ error: 'ID do usuário é obrigatório.' });
+    }
+
+    const query = `
+        INSERT INTO sprints (name, start_date, end_date, goal, color, usuario_id) 
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(query, 
+        [name, startDate, endDate, goal, color || '#5a52d9', usuarioId], 
+        (err, results) => {
+            if (err) {
+                console.error('❌ Erro criando sprint:', err);
+                return res.status(500).json({ error: 'Erro ao salvar sprint no banco.' });
+            }
+
+            console.log('✅ Sprint criada com sucesso:', name);
+            
+            // Retorna a sprint criada com o ID gerado pelo banco (insertId)
+            res.status(201).json({ 
+                id: results.insertId,
+                name, 
+                startDate, 
+                endDate, 
+                goal, 
+                color, 
+                usuarioId 
+            });
+        }
+    );
+});
+
+// GET /sprints/:usuario_id - Carregar as Sprints do Banco ao iniciar
+app.get('/sprints/:usuario_id', (req, res) => {
+    const usuarioId = req.params.usuario_id;
+    
+    // Busca todas as sprints daquele usuário
+    const query = 'SELECT * FROM sprints WHERE usuario_id = ? ORDER BY start_date DESC';
+
+    db.query(query, [usuarioId], (err, results) => {
+        if (err) {
+            console.error('❌ Erro buscando sprints:', err);
+            return res.status(500).json({ error: 'Erro ao buscar sprints.' });
+        }
+
+        // Formata os dados do banco (snake_case) para o frontend (camelCase)
+        const sprintsFormatadas = results.map(sprint => ({
+            id: `sprint-${sprint.id}`, // Adiciona o prefixo para funcionar com seu Drag&Drop
+            name: sprint.name,
+            startDate: sprint.start_date, // MySQL usa start_date
+            endDate: sprint.end_date,     // MySQL usa end_date
+            goal: sprint.goal,
+            color: sprint.color,
+            usuarioId: sprint.usuario_id
+        }));
+
+        res.json(sprintsFormatadas);
+    });
+});
+
 
 // ------------------------------
 // INICIALIZAÇÃO DO SERVIDOR (DEVE SER O ÚLTIMO PASSO)
