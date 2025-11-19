@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 // Importações de Componentes
 import ChatPanel from '../../components/ChatPanel/ChatPanel.jsx';
 import TaskModal from '../../components/TaskModal/index.jsx';
@@ -137,17 +139,17 @@ const getContrastTextColor = (hexcolor) => {
 // --- COMPONENTES DE SEÇÃO ---
 const ComponentIA = () => <div><h2>Conteúdo: Inteligência Artificial</h2></div>;
 const ComponentChat = () => (
-    <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+    <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         height: '100%',
         flexDirection: 'column',
         gap: '20px'
     }}>
         <h2>Chat</h2>
         <p>Use o botão flutuante no canto inferior direito para abrir o chat</p>
-        <button 
+        <button
             onClick={toggleChat}
             style={{
                 padding: '10px 20px',
@@ -181,7 +183,7 @@ function Dashboard({ navigateTo }) {
     const [userName, setUserName] = useState("");
     const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
-    const [searchTerm, setSearchTerm] = useState(''); 
+    const [searchTerm, setSearchTerm] = useState('');
 
     const taskToEdit = editingTaskId ? kanbanData.tasks[editingTaskId] : null;
 
@@ -209,14 +211,14 @@ function Dashboard({ navigateTo }) {
         });
         setCurrentActiveSprintId(activeId);
     }, [sprints]);
-    
+
     // FUNÇÕES DE CARREGAMENTO
-    const API_BASE_URL = 'http://localhost:3001'; 
+    const API_BASE_URL = 'http://localhost:3001';
 
     const loadUserAvatar = () => {
         const userData = localStorage.getItem('userData');
         let avatarPath = localStorage.getItem('userAvatar');
-        
+
         if (userData) {
             const user = JSON.parse(userData);
             setUserName(user.nome);
@@ -226,7 +228,7 @@ function Dashboard({ navigateTo }) {
                 avatarPath = user.avatar;
             }
         }
-        
+
         // 🔑 CORREÇÃO CRÍTICA: Se o caminho for relativo (começa com /uploads), constrói a URL completa
         if (avatarPath && avatarPath.startsWith('/uploads')) {
             const fullUrl = `${API_BASE_URL}${avatarPath}`;
@@ -245,20 +247,20 @@ function Dashboard({ navigateTo }) {
     const carregarTarefasDoBanco = async () => {
         try {
             console.log('🔄 Tentando carregar tarefas do banco...');
-            
+
             // 💡 NOTA: Se o seu GET /api/tarefas/:usuario_id ainda não estiver usando
             // o ID, ele falhará na busca e retornará vazio, causando o problema.
             // Para testar, garanta que há dados vinculados ao ID 1 no BD (se não houver autenticação completa)
             const tarefasAPI = await tarefasService.getTarefas();
-            
+
             // Converter para seu formato interno do Kanban
             const tasksObject = {};
             const columnTaskIds = {
                 'column-to-do': [],
-                'column-in-progress': [], 
+                'column-in-progress': [],
                 'column-done': []
             };
-            
+
             tarefasAPI.forEach(task => {
                 tasksObject[task.id] = task;
                 const statusMap = {
@@ -268,7 +270,7 @@ function Dashboard({ navigateTo }) {
                 };
                 columnTaskIds[statusMap[task.status] || 'column-to-do'].push(task.id);
             });
-            
+
             setKanbanData(prevData => ({
                 ...prevData,
                 tasks: tasksObject,
@@ -279,9 +281,9 @@ function Dashboard({ navigateTo }) {
                     'column-done': { ...prevData.columns['column-done'], taskIds: columnTaskIds['column-done'] }
                 }
             }));
-            
+
             console.log('✅ Kanban atualizado com', tarefasAPI.length, 'tarefas');
-            
+
         } catch (error) {
             console.error('❌ Erro carregando tarefas:', error);
         }
@@ -298,7 +300,7 @@ function Dashboard({ navigateTo }) {
             const response = await fetch(`${API_BASE_URL}/sprints/${usuarioId}`);
             if (response.ok) {
                 const sprintsAPI = await response.json();
-                
+
                 // Converte array para objeto (formato que seu estado usa)
                 const sprintsObject = {};
                 sprintsAPI.forEach(sprint => {
@@ -316,7 +318,7 @@ function Dashboard({ navigateTo }) {
     useEffect(() => {
         loadUserAvatar();
         carregarTarefasDoBanco();
-        carregarSprintsDoBanco(); 
+        carregarSprintsDoBanco();
     }, []);
 
     // FUNÇÕES DE CONTROLE
@@ -394,13 +396,13 @@ function Dashboard({ navigateTo }) {
 
             if (response.ok) {
                 const savedSprint = await response.json();
-                
+
                 // Atualiza a tela com o ID real do banco
                 setSprints(prev => ({
                     ...prev,
                     [savedSprint.id]: { ...dataToSave, id: savedSprint.id } // Usa o ID do banco!
                 }));
-                
+
                 handleCloseSprintModal();
                 console.log('✅ Sprint salva com sucesso!');
             } else {
@@ -410,7 +412,7 @@ function Dashboard({ navigateTo }) {
             console.error('❌ Erro de conexão:', error);
             alert('Erro de conexão ao salvar sprint.');
         }
-    };  
+    };
 
     const handleQuickAssignToSprint = (taskId, newSprintId) => {
         setKanbanData(prevData => ({
@@ -446,25 +448,25 @@ function Dashboard({ navigateTo }) {
     const handleAddTask = async (newTaskData) => {
         try {
             console.log('🔄 Criando nova tarefa...');
-            
+
             // 🔑 1. OBTÉM O ID DO USUÁRIO LOGADO DO localStorage
             const userData = JSON.parse(localStorage.getItem('userData'));
-            const usuarioId = userData ? userData.id : null; 
-            
+            const usuarioId = userData ? userData.id : null;
+
             if (!usuarioId) {
                 alert('Erro: Usuário não logado. Por favor, faça login novamente.');
-                return; 
+                return;
             }
-            
+
             // 🔑 2. INJETA O ID DO USUÁRIO E STATUS NOS DADOS ENVIADOS
-            const taskComStatus = { 
+            const taskComStatus = {
                 ...newTaskData,
                 status: 'to-do',
                 usuarioId: usuarioId // Adiciona o ID do usuário para o backend
             };
 
             const novaTarefa = await tarefasService.createTarefa(taskComStatus);
-            
+
             // Atualização do estado local
             setKanbanData(prevData => {
                 const newTasks = { ...prevData.tasks, [novaTarefa.id]: novaTarefa };
@@ -473,7 +475,7 @@ function Dashboard({ navigateTo }) {
                 const newToDoColumn = { ...toDoColumn, taskIds: newToDoTaskIds };
                 return { ...prevData, tasks: newTasks, columns: { ...prevData.columns, 'column-to-do': newToDoColumn } };
             });
-            
+
             closeModal();
             console.log('✅ Tarefa criada com sucesso:', novaTarefa.name);
         } catch (error) {
@@ -485,7 +487,7 @@ function Dashboard({ navigateTo }) {
     const handleDeleteTask = async (taskId) => {
         try {
             await tarefasService.deleteTarefa(taskId);
-            
+
             // Atualização do estado local
             setKanbanData(prevData => {
                 const newTasks = { ...prevData.tasks };
@@ -496,7 +498,7 @@ function Dashboard({ navigateTo }) {
                 });
                 return { ...prevData, tasks: newTasks, columns: newColumns };
             });
-            
+
             closeModal();
         } catch (error) {
             console.error('❌ Erro excluindo tarefa:', error);
@@ -507,7 +509,7 @@ function Dashboard({ navigateTo }) {
     const handleEditTask = async (editedTaskData) => {
         try {
             await tarefasService.updateTarefa(editedTaskData.id, editedTaskData);
-            
+
             // Se o status da tarefa mudou, precisamos mover o ID para a coluna correta
             const oldStatus = kanbanData.tasks[editedTaskData.id]?.status;
             const newStatus = editedTaskData.status;
@@ -526,20 +528,20 @@ function Dashboard({ navigateTo }) {
                     }
                     // 2. Adiciona à nova coluna (ao final)
                     if (newColumns[newColumnId]) {
-                         newColumns[newColumnId].taskIds = [...newColumns[newColumnId].taskIds, editedTaskData.id];
+                        newColumns[newColumnId].taskIds = [...newColumns[newColumnId].taskIds, editedTaskData.id];
                     }
                 }
-                
+
                 return { ...prevData, tasks: newTasks, columns: newColumns };
             });
-            
+
             closeModal();
         } catch (error) {
             console.error('❌ Erro editando tarefa:', error);
             alert('Erro ao atualizar tarefa. Tente novamente.');
         }
     };
-        
+
     // FUNÇÃO DE LOGOUT
     const handleLogout = () => {
         console.log('Usuário deslogando e voltando para a Home...');
@@ -599,8 +601,8 @@ function Dashboard({ navigateTo }) {
             const taskToUpdate = kanbanData.tasks[draggableId];
             await tarefasService.updateTarefa(draggableId, { ...taskToUpdate, status: newStatus });
         } catch (error) {
-             console.error("Erro ao atualizar status da tarefa no banco:", error);
-             alert("Atenção: A tarefa foi movida localmente, mas houve um erro ao salvar o novo status no banco.");
+            console.error("Erro ao atualizar status da tarefa no banco:", error);
+            alert("Atenção: A tarefa foi movida localmente, mas houve um erro ao salvar o novo status no banco.");
         }
 
 
@@ -658,7 +660,7 @@ function Dashboard({ navigateTo }) {
     const ComponentTasks = () => {
         const getFilteredTasks = (taskIds) => {
             let tasks = taskIds.map(taskId => kanbanData.tasks[taskId]).filter(Boolean);
-            
+
             if (activeSprintFilter === 'all') {
                 return tasks;
             }
@@ -669,16 +671,16 @@ function Dashboard({ navigateTo }) {
 
             return tasks.filter(task => task.sprintId === activeSprintFilter);
         };
-        
+
         return (
             <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                     <AddButton onClick={() => openModal(null)}><h2>+</h2></AddButton>
-                    
+
                     {/* Seletor de Filtro de Sprint */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <h2 style={{ color: '#3133B8' }}>Selecionar por Sprint:</h2>
-                        <TaskSprintSelect 
+                        <TaskSprintSelect
                             value={activeSprintFilter}
                             onChange={(e) => setActiveSprintFilter(e.target.value)}
                         >
@@ -742,20 +744,27 @@ function Dashboard({ navigateTo }) {
             : [];
 
         const sprintEvents = Object.values(sprints).map(sprint => {
-            // CORREÇÃO: Força o parse da data como fuso horário LOCAL no meio-dia.
-            const startDate = new Date(sprint.startDate + 'T12:00:00');
-            const endDate = new Date(sprint.endDate + 'T12:00:00');
+            // --- CORREÇÃO INÍCIO ---
 
-            // NOTE: A biblioteca 'react-big-calendar' exige que a data final seja o dia seguinte
-            // ao último dia para que a range de dias seja exibida corretamente.
-            // Usaremos addDays(endDate, 1) para adicionar um dia
+            // 1. Garante que tratamos como string e pegamos apenas a parte da DATA (YYYY-MM-DD)
+            // Isso resolve tanto "2023-11-18" quanto "2023-11-18T03:00:00.000Z"
+            const rawStartDate = String(sprint.startDate).split('T')[0];
+            const rawEndDate = String(sprint.endDate).split('T')[0];
+
+            // 2. Agora montamos com o horário fixo de meio-dia para evitar problemas de fuso
+            const startDate = new Date(rawStartDate + 'T12:00:00');
+            const endDate = new Date(rawEndDate + 'T12:00:00');
+
+            // --- CORREÇÃO FIM ---
+
+            // A biblioteca 'react-big-calendar' exige que a data final seja o dia seguinte
             const adjustedEndDate = addDays(endDate, 1);
 
             return {
                 id: sprint.id,
                 title: `[S] ${sprint.name}`,
-                start: startDate, // Data de início correta
-                end: adjustedEndDate, // Data de fim (último dia + 1) correta
+                start: startDate,
+                end: adjustedEndDate,
                 isSprint: true,
                 color: sprint.color
             };
@@ -880,51 +889,137 @@ function Dashboard({ navigateTo }) {
 
     // COMPONENTE: PAINEL DE CONTROLE
     const ComponentPanel = () => {
-    // 1. Defina os gráficos
-    const mainChartTitle = 'Gráfico de Burndown';
-    const secondaryChartTitles = ['Visão Geral de Status', 'Matriz de Prioridade'];
+        const mainChartTitle = 'Gráfico de Burndown';
+        const secondaryChartTitles = ['Visão Geral de Status', 'Matriz de Prioridade'];
+        const MainChartComponent = CHART_COMPONENTS[mainChartTitle];
 
-    const MainChartComponent = CHART_COMPONENTS[mainChartTitle];
-    
-    return (
-        <PanelContainer>
+        const printRef = useRef();
 
-            {/* --- 1. GRÁFICO PRINCIPAL (Linha Superior) --- */}
-            {/* Usamos um ChartWrapper especial para o Burndown */}
-            <MainChartRowWrapper> 
-                <ChartWrapper key={mainChartTitle}>
-                    <h3>{mainChartTitle}</h3>
-                    <ChartArea> 
-                        <MainChartComponent
-                            data={kanbanData}
-                            sprints={sprints}
-                        />
-                    </ChartArea>
-                </ChartWrapper>
-            </MainChartRowWrapper>
+        // 1. Estado para controlar o loading
+        const [isGenerating, setIsGenerating] = useState(false);
 
-            {/* --- 2. GRÁFICOS SECUNDÁRIOS (Linha Inferior) --- */}
-            {/* Usamos o ChartGridWrapper para os gráficos lado a lado */}
-            <ChartGridWrapper> 
-                {secondaryChartTitles.map((title) => {
-                    const CurrentChartComponent = CHART_COMPONENTS[title];
-                    
-                    return (
-                        <ChartWrapper key={title}>
-                            <h3>{title}</h3>
-                            <ChartArea> 
-                                <CurrentChartComponent
+        const handleGeneratePDF = async () => {
+            // Evita clique duplo se já estiver gerando
+            if (isGenerating) return;
+
+            console.log("1. Iniciando geração do PDF...");
+            setIsGenerating(true); // Ativa o loading
+
+            const element = printRef.current;
+
+            if (!element) {
+                console.error("Elemento não encontrado (ref é null)");
+                alert("Erro: Não foi possível encontrar a área do gráfico.");
+                setIsGenerating(false);
+                return;
+            }
+
+            try {
+                console.log("2. Capturando tela com html2canvas...");
+
+                // Pequeno delay para garantir que renderizações do React terminaram (opcional, mas ajuda com gráficos)
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    useCORS: true, // Ajuda se houver imagens externas
+                    logging: false, // Desliga logs internos do html2canvas para limpar o console
+                    onclone: (clonedDoc) => {
+                        // Tenta forçar a renderização correta no clone (útil para alguns libs de gráfico)
+                        console.log("DOM clonado com sucesso");
+                    }
+                });
+
+                console.log("3. Canvas gerado. Criando PDF...");
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('landscape', 'mm', 'a4');
+
+                const componentWidth = pdf.internal.pageSize.getWidth();
+                const componentHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = componentWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
+                console.log("4. Salvando arquivo...");
+                pdf.save('relatorio-dashboard.pdf');
+
+            } catch (error) {
+                console.error("❌ Erro FATAL ao gerar PDF:", error);
+                alert("Ocorreu um erro ao gerar o relatório. Verifique o console (F12) para detalhes.");
+            } finally {
+                // O finally garante que o botão seja liberado mesmo se der erro
+                console.log("5. Finalizando processo.");
+                setIsGenerating(false);
+            }
+        };
+        return (
+            <div>
+                {/* --- BOTÃO DE AÇÃO --- */}
+                <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                        onClick={handleGeneratePDF}
+                        style={{
+                            padding: '10px 20px',
+                            cursor: 'pointer',
+                            backgroundColor: '#007bff',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px'
+                        }}
+                    >
+                        {isGenerating ? (
+                            <>
+                                <span>⏳</span> Gerando Relatório...
+                            </>
+                        ) : (
+                            <>
+                                <span>📄</span> Gerar Relatório PDF
+                            </>
+                        )}
+                    </button>
+                </div>
+
+                {/* --- ÁREA DE IMPRESSÃO (Adicionamos a ref aqui) --- */}
+                <PanelContainer ref={printRef}>
+
+                    {/* --- 1. GRÁFICO PRINCIPAL (Linha Superior) --- */}
+                    <MainChartRowWrapper>
+                        <ChartWrapper key={mainChartTitle}>
+                            <h3>{mainChartTitle}</h3>
+                            <ChartArea>
+                                <MainChartComponent
                                     data={kanbanData}
                                     sprints={sprints}
                                 />
                             </ChartArea>
                         </ChartWrapper>
-                    );
-                })}
-            </ChartGridWrapper>
-        </PanelContainer>
-    );
-};
+                    </MainChartRowWrapper>
+
+                    {/* --- 2. GRÁFICOS SECUNDÁRIOS (Linha Inferior) --- */}
+                    <ChartGridWrapper>
+                        {secondaryChartTitles.map((title) => {
+                            const CurrentChartComponent = CHART_COMPONENTS[title];
+
+                            return (
+                                <ChartWrapper key={title}>
+                                    <h3>{title}</h3>
+                                    <ChartArea>
+                                        <CurrentChartComponent
+                                            data={kanbanData}
+                                            sprints={sprints}
+                                        />
+                                    </ChartArea>
+                                </ChartWrapper>
+                            );
+                        })}
+                    </ChartGridWrapper>
+                </PanelContainer>
+            </div>
+        );
+    };
 
 
     // COMPONENTE: BACKLOG
@@ -1037,7 +1132,7 @@ function Dashboard({ navigateTo }) {
     // MODAL DE UPLOAD DE AVATAR
     const AvatarUploadModal = ({ onClose }) => {
         const userData = JSON.parse(localStorage.getItem('userData'));
-        
+
         const [selectedFile, setSelectedFile] = useState(null);
         const [previewUrl, setPreviewUrl] = useState(genericAvatar); // Usa genericAvatar como fallback
         const [uploading, setUploading] = useState(false);
@@ -1073,7 +1168,7 @@ function Dashboard({ navigateTo }) {
                 formData.append('userId', userData.id);
 
                 console.log('📤 Enviando upload para usuário:', userData.id);
-                
+
                 const response = await fetch('http://localhost:3001/upload-avatar', {
                     method: 'POST',
                     body: formData,
@@ -1085,10 +1180,10 @@ function Dashboard({ navigateTo }) {
                     const newAvatarUrl = data.avatarUrl;
                     setAvatarUrl(newAvatarUrl); // Atualiza o estado do Dashboard
                     localStorage.setItem('userAvatar', newAvatarUrl);
-                    
+
                     const updatedUserData = { ...userData, avatar: newAvatarUrl };
                     localStorage.setItem('userData', JSON.stringify(updatedUserData));
-                    
+
                     console.log('✅ Avatar atualizado:', newAvatarUrl);
                     alert("✅ Foto alterada com sucesso!");
                     onClose();
@@ -1125,12 +1220,12 @@ function Dashboard({ navigateTo }) {
                     textAlign: 'center'
                 }}>
                     <h3>Alterar Foto do Perfil</h3>
-                    
+
                     {/* PREVIEW DA IMAGEM */}
                     <div style={{ margin: '20px 0' }}>
-                        <img 
-                            src={previewUrl} 
-                            alt="Preview" 
+                        <img
+                            src={previewUrl}
+                            alt="Preview"
                             style={{
                                 width: '150px',
                                 height: '150px',
@@ -1140,13 +1235,13 @@ function Dashboard({ navigateTo }) {
                             }}
                         />
                     </div>
-                    
+
                     {/* INPUT DE ARQUIVO */}
-                    <input 
-                        type="file" 
+                    <input
+                        type="file"
                         accept="image/*"
                         onChange={handleFileSelect}
-                        style={{ 
+                        style={{
                             margin: '10px 0',
                             padding: '10px',
                             border: '1px solid #ddd',
@@ -1155,10 +1250,10 @@ function Dashboard({ navigateTo }) {
                         }}
                         disabled={uploading}
                     />
-                    
+
                     {/* BOTÕES DE AÇÃO */}
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
-                        <button 
+                        <button
                             onClick={handleUpload}
                             disabled={uploading || !selectedFile}
                             style={{
@@ -1172,7 +1267,7 @@ function Dashboard({ navigateTo }) {
                         >
                             {uploading ? '📤 Enviando...' : '✅ Confirmar'}
                         </button>
-                        <button 
+                        <button
                             onClick={onClose}
                             disabled={uploading}
                             style={{
@@ -1187,7 +1282,7 @@ function Dashboard({ navigateTo }) {
                             ❌ Cancelar
                         </button>
                     </div>
-                    
+
                     {/* MENSAGEM DE STATUS */}
                     {!selectedFile && (
                         <p style={{ color: '#666', fontSize: '12px', marginTop: '10px' }}>
@@ -1256,7 +1351,7 @@ function Dashboard({ navigateTo }) {
                                 borderBottom: '1px solid #eee'
                             }}>
                                 <span>{item.label}</span>
-                                <input 
+                                <input
                                     type="checkbox"
                                     checked={notificationSettings[item.key]}
                                     onChange={() => handleToggle(item.key)}
@@ -1266,7 +1361,7 @@ function Dashboard({ navigateTo }) {
                         ))}
                     </div>
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                        <button 
+                        <button
                             onClick={handleSave}
                             style={{
                                 padding: '8px 16px',
@@ -1279,7 +1374,7 @@ function Dashboard({ navigateTo }) {
                         >
                             Salvar
                         </button>
-                        <button 
+                        <button
                             onClick={() => setIsNotificationModalOpen(false)}
                             style={{
                                 padding: '8px 16px',
@@ -1301,7 +1396,7 @@ function Dashboard({ navigateTo }) {
     // PAINEL DE CONFIGURAÇÕES
     const UserSettingsPanel = () => {
         const [userData, setUserData] = useState({ id: 123, nome: "Usuário" });
-        
+
         useEffect(() => {
             const savedUserData = localStorage.getItem('userData');
             if (savedUserData) {
@@ -1311,13 +1406,13 @@ function Dashboard({ navigateTo }) {
 
         const settingsItems = [
             { name: "Mudar Foto/Avatar", action: () => setIsAvatarModalOpen(true) },
-            { 
-                name: "Preferências de Notificação", 
+            {
+                name: "Preferências de Notificação",
                 action: () => setIsNotificationModalOpen(true)
             },
-            { 
+            {
                 name: `Modo Escuro: ${isDarkMode ? 'Ativado' : 'Desativado'}`,
-                action: toggleTheme 
+                action: toggleTheme
             },
             { name: "Sair / Logout", action: handleLogout },
         ];
@@ -1362,9 +1457,9 @@ function Dashboard({ navigateTo }) {
                 {/* TOP BAR ATUALIZADO COM NOME DO USUÁRIO */}
                 <TopBar>
                     <Logo src={logoMindFlow} alt="MindFlow Logo" />
-                    
+
                     {/* ÁREA DO USUÁRIO COM NOME E FOTO */}
-                    <div 
+                    <div
                         onClick={toggleSettingsPanel}
                         style={{
                             display: 'flex',
@@ -1388,7 +1483,7 @@ function Dashboard({ navigateTo }) {
                         </span>
                         <Avatar src={avatarUrl} alt="Perfil do Usuário" />
                     </div>
-                    
+
                     <AnimatedBorder />
                 </TopBar>
 
@@ -1436,12 +1531,12 @@ function Dashboard({ navigateTo }) {
                         <img src="\src\assets\ia_clara.png" alt="" />
                     </FloatingButton>
                 </FloatingButtonsContainer>
-                
+
                 <UserSettingsPanel />
-                <ChatPanel 
-                    open={isChatOpen} 
-                    onClose={toggleChat} 
-                    isDarkMode={isDarkMode} 
+                <ChatPanel
+                    open={isChatOpen}
+                    onClose={toggleChat}
+                    isDarkMode={isDarkMode}
                 />
             </LayoutContainer>
         </HomeBody>
