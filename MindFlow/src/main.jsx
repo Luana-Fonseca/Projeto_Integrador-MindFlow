@@ -10,7 +10,7 @@ import Dashboard from './pages/Dashboard'
 import MyGlobalStyles from './styles/globalStyles'
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard')
+  const [currentPage, setCurrentPage] = useState('home')
 
   const navigateTo = (page) => {
     console.log('🚀 Navegando para:', page) // DEBUG
