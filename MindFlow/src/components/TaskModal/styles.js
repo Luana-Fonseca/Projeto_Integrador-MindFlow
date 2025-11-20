@@ -47,7 +47,7 @@ const fadeInScale = keyframes`
 const getPriorityColors = (level) => {
     switch (level) {
         case 'low':
-            return { background: '#D9F7BE', text: '#52C41A', border: '#B7EB8F' }; 
+            return { background: '#8f91f5ff', text: '#3133B8', border: '#3133B8' }; 
         case 'medium':
             return { background: '#FFF7AE', text: '#FAAD14', border: '#FFE58F' }; 
         case 'high':

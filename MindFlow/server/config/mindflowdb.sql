@@ -14,7 +14,7 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
+ /*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Banco de dados: `mindflowdb`
@@ -25,6 +25,9 @@ SET time_zone = "+00:00";
 --
 -- Estrutura para tabela `tarefas`
 --
+
+CREATE DATABASE IF NOT EXISTS `mindflowdb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `mindflowdb`;
 
 CREATE TABLE `tarefas` (
   `id` int(11) NOT NULL,
