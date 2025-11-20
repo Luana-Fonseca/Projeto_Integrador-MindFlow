@@ -253,27 +253,28 @@ app.post('/api/tarefas', (req, res) => {
 });
 
 app.put('/api/tarefas/:id', (req, res) => {
-  const taskId = req.params.id.replace('task-', '');
-  const tarefaReact = req.body;
-  const usuario_id = tarefaReact.usuarioId || 1;
-  const tarefaMySQL = converterParaMySQL(tarefaReact, usuario_id);
+    const taskId = req.params.id.replace('task-', '');
+    const tarefaReact = req.body;
+    const usuario_id = tarefaReact.usuarioId || 1;
+    // VERIFIQUE SE converterParaMySQL está sendo chamado corretamente com tarefaReact (que contém sprintId)
+    const tarefaMySQL = converterParaMySQL(tarefaReact, usuario_id);
 
-  const query = `
-    UPDATE tarefas 
+    const query = `
+    UPDATE tarefas
     SET titulo=?, descricao=?, prioridade=?, data_vencimento=?, status=?, sprint_id=?
     WHERE id=? AND usuario_id=?
-  `;
+`; // <--- O CAMPO sprint_id TEM QUE ESTAR AQUI
 
-  db.query(query,
+db.query(query,
     [
-      tarefaMySQL.titulo,
-      tarefaMySQL.descricao,
-      tarefaMySQL.prioridade,
-      tarefaMySQL.data_vencimento,
-      tarefaMySQL.status,
-      tarefaMySQL.sprint_id,
-      taskId,
-      usuario_id
+        tarefaMySQL.titulo,
+        tarefaMySQL.descricao,
+        tarefaMySQL.prioridade,
+        tarefaMySQL.data_vencimento,
+        tarefaMySQL.status,
+        tarefaMySQL.sprint_id, // <--- E A VARIÁVEL TEM QUE SER PASSADA AQUI
+        taskId,
+        usuario_id
     ],
     (err) => {
       if (err) {

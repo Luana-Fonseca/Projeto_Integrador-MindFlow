@@ -229,7 +229,7 @@ const ChatPanel = ({ open, onClose, isDarkMode }) => {
     // Adiciona mensagem de "digitando..."
     const typingMsg = {
       id: "ai",
-      text: "🤖 AI está pensando...",
+      text: "🤖 Milo está pensando...",
       time: now + 1,
       type: "ai_typing",
     };

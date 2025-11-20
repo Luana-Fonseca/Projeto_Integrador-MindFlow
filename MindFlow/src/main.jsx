@@ -1,5 +1,5 @@
 // src/main.jsx
-import { StrictMode, useState } from 'react'
+import { StrictMode, useState, useEffect } from 'react'
 import { createRoot } from 'react-dom/client';
 import Home from './pages/Home'
 import About from './pages/About'
@@ -9,15 +9,29 @@ import Cadastro from './pages/Cadastro'
 import Dashboard from './pages/Dashboard'
 import MyGlobalStyles from './styles/globalStyles'
 
+const PAGE_STORAGE_KEY = 'lastVisitedPage'; // Chave para o localStorage
+
 function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard')
+  // 1. LÊ o estado inicial do localStorage
+  // Se houver um valor salvo, usa ele. Caso contrário, usa 'home'.
+  const [currentPage, setCurrentPage] = useState(() => {
+    const savedPage = localStorage.getItem(PAGE_STORAGE_KEY);
+    return savedPage ? savedPage : 'home';
+  });
+
+  // 2. SALVA o estado no localStorage sempre que currentPage mudar
+  useEffect(() => {
+    console.log('📝 Salvando página no localStorage:', currentPage);
+    localStorage.setItem(PAGE_STORAGE_KEY, currentPage);
+  }, [currentPage]); // Este efeito executa sempre que currentPage é atualizado
 
   const navigateTo = (page) => {
-    console.log('🚀 Navegando para:', page) // DEBUG
-    setCurrentPage(page)
+    console.log('🚀 Navegando e atualizando estado para:', page);
+    // Esta chamada naturalmente aciona o useEffect acima
+    setCurrentPage(page);
   }
 
-  console.log('📄 Página atual:', currentPage) // DEBUG
+  // console.log('📄 Página atual:', currentPage) // DEBUG (Pode ser removido)
 
   const renderCurrentPage = () => {
     switch(currentPage) {
