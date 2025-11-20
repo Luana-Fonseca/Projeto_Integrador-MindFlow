@@ -68,25 +68,41 @@ db.connect((err) => {
 // ------------------------------
 
 const converterTarefa = (tarefaDB) => ({
-  id: `task-${tarefaDB.id}`,
-  name: tarefaDB.titulo,
-  description: tarefaDB.descricao,
-  dueDate: tarefaDB.data_vencimento,
-  priority: tarefaDB.prioridade,
-  sprintId: tarefaDB.sprint_id ? `sprint-${tarefaDB.sprint_id}` : null,
-  status: tarefaDB.status,
-  usuarioId: tarefaDB.usuario_id
+    id: `task-${tarefaDB.id}`,
+    name: tarefaDB.titulo,
+    description: tarefaDB.descricao,
+    dueDate: tarefaDB.data_vencimento,
+    priority: tarefaDB.prioridade,
+    // 🎯 VERIFICAÇÃO CRÍTICA: Se sprint_id for nulo ou 0, usa null.
+    // Se for um número (a ID salva no BD), prefixa com 'sprint-'.
+    sprintId: (tarefaDB.sprint_id && tarefaDB.sprint_id > 0) ? `sprint-${tarefaDB.sprint_id}` : null,
+    status: tarefaDB.status,
+    usuarioId: tarefaDB.usuario_id
 });
 
-const converterParaMySQL = (tarefaReact, usuario_id = 1) => ({
-  titulo: tarefaReact.name,
-  descricao: tarefaReact.description,
-  prioridade: tarefaReact.priority,
-  data_vencimento: tarefaReact.dueDate,
-  status: tarefaReact.status,
-  sprint_id: tarefaReact.sprintId ? parseInt(tarefaReact.sprintId.replace('sprint-', '')) : null,
-  usuario_id: usuario_id
-});
+const converterParaMySQL = (tarefaReact, usuario_id = 1) => {
+    let sprintIdParaBD = null;
+
+    if (tarefaReact.sprintId && typeof tarefaReact.sprintId === 'string' && tarefaReact.sprintId.startsWith('sprint-')) {
+        // Se for uma string 'sprint-X', remove o prefixo e converte para INT
+        sprintIdParaBD = parseInt(tarefaReact.sprintId.replace('sprint-', ''), 10);
+    } else if (tarefaReact.sprintId === null) {
+        // Se for explicitamente null (tarefa desassociada)
+        sprintIdParaBD = null;
+    } 
+    // Se for undefined ou 0, permanece null, que é o valor padrão definido em sprintIdParaBD
+
+    return {
+        titulo: tarefaReact.name,
+        descricao: tarefaReact.description,
+        prioridade: tarefaReact.priority,
+        data_vencimento: tarefaReact.dueDate,
+        status: tarefaReact.status,
+        // 🎯 CORREÇÃO APLICADA AQUI: Usa a ID numérica (ou null) tratada acima.
+        sprint_id: sprintIdParaBD,
+        usuario_id: usuario_id
+    };
+};
 
 // ------------------------------
 // ROTAS DE AUTENTICAÇÃO
@@ -158,6 +174,38 @@ app.post('/login', (req, res) => {
             }
         });
     });
+});
+
+app.put('/sprints/:id', (req, res) => {
+    const sprintId = req.params.id; // Recebe o ID numérico da URL (sem prefixo 'sprint-')
+    const { name, startDate, endDate, goal, color, usuarioId } = req.body;
+
+    // Verificação básica
+    if (!usuarioId) {
+        return res.status(400).json({ error: 'ID do usuário é obrigatório.' });
+    }
+
+    const query = `
+        UPDATE sprints 
+        SET name=?, start_date=?, end_date=?, goal=?, color=?
+        WHERE id=? AND usuario_id=?
+    `;
+
+    db.query(query, 
+        [name, startDate, endDate, goal, color || '#5a52d9', sprintId, usuarioId], 
+        (err, results) => {
+            if (err) {
+                console.error('❌ Erro atualizando sprint:', err);
+                return res.status(500).json({ error: 'Erro ao atualizar sprint no banco.' });
+            }
+            if (results.affectedRows === 0) {
+                 return res.status(404).json({ error: 'Sprint não encontrada ou não pertence ao usuário.' });
+            }
+
+            console.log('✅ Sprint atualizada com sucesso:', name);
+            res.status(200).json({ message: 'Sprint atualizada com sucesso!' });
+        }
+    );
 });
 
 // POST /upload-avatar – ATUALIZAÇÃO DO AVATAR (NOVA ROTA)
