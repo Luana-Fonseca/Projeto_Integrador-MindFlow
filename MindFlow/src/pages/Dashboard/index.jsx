@@ -1017,27 +1017,27 @@ function Dashboard({ navigateTo }) {
                 const titulo = 'Relatório - Dashboard';
                 const dataAtual = new Date().toLocaleDateString('pt-BR');
 
-                const marginX = 10; 
-                const headerStart = 15; 
-                const lineY = 20;       
-                const imageY = 25;      
+                const marginX = 10;
+                const headerStart = 15;
+                const lineY = 20;
+                const imageY = 25;
 
                 pdf.setFont("helvetica", "bold");
-                pdf.setFontSize(18);              
-                pdf.setTextColor(40, 40, 40);     
+                pdf.setFontSize(18);
+                pdf.setTextColor(40, 40, 40);
                 pdf.text(titulo, marginX, headerStart);
 
-        
+
                 pdf.setFont("helvetica", "normal");
                 pdf.setFontSize(10);
-                pdf.setTextColor(100, 100, 100);  
+                pdf.setTextColor(100, 100, 100);
                 pdf.text(`Gerado em: ${dataAtual}`, pageWidth - marginX, headerStart, { align: 'right' });
 
-                pdf.setLineWidth(0.5);          
-                pdf.setDrawColor(150, 150, 150);  
+                pdf.setLineWidth(0.5);
+                pdf.setDrawColor(150, 150, 150);
                 pdf.line(marginX, lineY, pageWidth - marginX, lineY);
 
-                const imgWidth = pageWidth; 
+                const imgWidth = pageWidth;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
                 pdf.addImage(imgData, 'PNG', 0, imageY, imgWidth, imgHeight);
